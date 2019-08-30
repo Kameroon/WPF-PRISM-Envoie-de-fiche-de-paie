@@ -21,8 +21,8 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Helpers
         public static string BuilBody(string body, string htmlTemplate,
             string currentMonth, string toEmail)
         {
-            body = htmlTemplate.Replace("{E}", toEmail.Split('@')[0]);
-            body = body.Replace("{C}", currentMonth);
+            body = htmlTemplate.Replace("{Nom}", (toEmail.Split('@')[0]).ToUpper());
+            body = body.Replace("{Mois}", currentMonth.ToUpper());
             body += "\n\rCeci est un message automatique.";
 
             return body;

@@ -14,7 +14,7 @@
 
     <Grid.Resources>
         <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter"/>
-        <converter:IsButtonEnabledConverter x:Key="IsButtonEnabledConverter" />
+        <converter:IsButtonEnabledBasedOnEMailFormatConverter x:Key="IsButtonEnabledBasedOnEMailFormatConverter" />
         <converter:HasAllTextConverter x:Key="HasAllTextConverter"/>
         <!---  ************** En complement de Textbox validation ************** TargetType="{x:Type TextBox} -->
         <Style x:Key="CustomTextBoxTextStyle" TargetType="TextBox">
@@ -179,15 +179,19 @@
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
                         </Grid.RowDefinitions>
+
                         <!-- Template mail -->
                         <TextBox x:Name="textBoxMailTemplate" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" TextWrapping="Wrap"                               
-                                 Text="{Binding MailTemplate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                 Text="{Binding MailTemplate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Visibility="{Binding IsTemplateValide, Converter={StaticResource booleanToVisibilityConverter}}">
                         </TextBox>
+                        
                         <!-- Message d'accueil -->
                         <TextBlock Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" FontWeight="DemiBold" 
-                                   FontSize="18" Margin="3" Foreground="Red" HorizontalAlignment="Center" 
-                                   VerticalAlignment="Center" Text="Veuillez choisir un model de mail!" 
-                                   Visibility="{Binding IsTemplateValide, Converter={StaticResource booleanToVisibilityConverter}}"/>
+                                   FontSize="18" Margin="3 2 3 3" Foreground="{Binding RemindingMsgForeground}" HorizontalAlignment="Center" 
+                                   VerticalAlignment="Center" Text="{Binding PleaseChooseMailTemplateLabel}" 
+                                   Visibility="{Binding IsReminderMsgVisible, Converter={StaticResource booleanToVisibilityConverter}}"/>
+
                         <!-- Choix du template de mail -->
                         <Button Grid.Row="1" Grid.Column="1" FontSize="15" Height="35" Margin="2 0 0 0"
                                 Content="{Binding ChooseMailTemplateLabelBtn, FallbackValue=Parcourir}" 
@@ -223,23 +227,27 @@
                 <!-- Buttons -->
                 <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" 
                             HorizontalAlignment="Center" Margin="5">
+                    <!-- Bouton "Prévisualiser" ******** UTILISER ********* -->
                     <Button Content="{Binding SendPreviewLabelBtn, FallbackValue=Prévisualiser}" 
                             FontSize="15" Margin="0 0 5 0" Height="40" Cursor="Hand" 
                             IsEnabled="{Binding ElementName=textBoxAdminEmail, Path=Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged,
-                                        Converter={StaticResource IsButtonEnabledConverter}}"                    
-                            FontWeight="SemiBold" Command="{Binding SendPreviewCommand}">                           
+                                        Converter={StaticResource IsButtonEnabledBasedOnEMailFormatConverter}}"                    
+                            FontWeight="SemiBold" Command="{Binding SendPreviewCommand}" 
+                            Visibility="{Binding AreSendCommandVisible, Converter={StaticResource booleanToVisibilityConverter}}">                           
                     </Button>
 
                     <!--<Button Content="{Binding SendByMailLabelBtn, FallbackValue=Envoyer}" FontSize="15"
                             Height="40" Cursor="Hand" FontWeight="SemiBold" Command="{Binding SendMailCommand}" 
                             IsEnabled="{Binding ElementName=textBoxAdminEmail, Path=Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged,
-                                        Converter={StaticResource IsButtonEnabledConverter}}">
+                                        Converter={StaticResource IsButtonEnabledBasedOnEMailFormatConverter}}">
                     </Button>-->
 
+                    <!-- Bouton "Envoyer" ******** UTILISER ********* -->
                     <Button Content="{Binding SendByMailLabelBtn, FallbackValue=Envoyer}" FontSize="15"
                             Height="40" Cursor="Hand" FontWeight="SemiBold" Command="{Binding SendMailCommand}"
                             IsEnabled="{Binding ElementName=textBoxAdminEmail, Path=Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged,
-                                        Converter={StaticResource IsButtonEnabledConverter}}">
+                                        Converter={StaticResource IsButtonEnabledBasedOnEMailFormatConverter}}" 
+                            Visibility="{Binding AreSendCommandVisible, Converter={StaticResource booleanToVisibilityConverter}}">
                         <Button.Style>
                             <Style TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonStyle}">
                                 <Style.Triggers>
@@ -294,9 +302,9 @@
                                 </Style.Triggers>
                             </Style>
                         </Button.Style>
-                    </Button>-->                    
+                    </Button>-->
 
-                    <!--IsEnabled="{Binding CheckIfCanSendMail, Converter={StaticResource IsButtonEnabledConverter}}"-->
+                    <!--IsEnabled="{Binding CheckIfCanSendMail, Converter={StaticResource IsButtonEnabledBasedOnEMailFormatConverter}}"-->
                     <!--<Button Content="{Binding ClearBccCcBoxLabelBtn, FallbackValue=Réinitialiser}" 
                             FontSize="15" Margin="5 0 0 0" Height="40" Cursor="Hand" FontWeight="SemiBold" 
                             Command="{Binding CleerBccOrCcMailCommand}">
@@ -318,20 +326,14 @@
                         </Button.Style>
                     </Button>-->
 
-                    <!-- Test "Réinitialiser" Enable based on textBox has value -->
-                    <!--
+                    <!-- Test "Réinitialiser" Enable based on textBox has value
                         https://www.codeproject.com/Questions/1101746/Need-to-enable-the-button-when-all-textbox-has-val
                         https://stackoverflow.com/questions/33280097/disable-a-button-if-either-of-the-two-textboxes-are-empty
                     -->
+                    <!-- Test "Réinitialiser" Enable based on textBox has value -->
                     <Button Content="{Binding ClearBccCcBoxLabelBtn, FallbackValue=Réinitialiser}" 
                             FontSize="15" Margin="5 0 0 0" Height="40" Cursor="Hand"             
                             FontWeight="SemiBold" Command="{Binding CleerBccOrCcMailCommand}">
-                        <!--<Button.IsEnabled>
-                            <MultiBinding Converter="{StaticResource HasAllTextConverter}">
-                                <Binding ElementName="txtBoxBCC" Path="Text" />
-                                <Binding ElementName="txtBoxCC" Path="Text" />
-                            </MultiBinding>
-                        </Button.IsEnabled>-->
                     </Button>
                 </StackPanel>
             </Grid>

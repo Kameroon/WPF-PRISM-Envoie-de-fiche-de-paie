@@ -42,25 +42,32 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
         private string _ccMail; 
         private string _adminEmail = "citoyenlamda@gmail.com";
         private string _mailTemplate;
+        private string _templateFilePath;
         private string _filePath;
         private bool _isTestMail;
-        private bool _isFilePathVisible;
-        private bool _isFilePathCorrect;
-        private bool _isProgressVisibility;
-        private double _currentProgress;
-        private bool _canContinuousSendMail;
-        private bool _isTemplateValide;
         private bool _isMainGridEnable;
+        private bool _isTemplateValide;
+        private bool _isFilePathCorrect;
+        private bool _isFilePathVisible;
+        private bool _isProgressVisibility;
+        private bool _isReminderMsgVisible;
+        private bool _areSendCommandVisible;
         private bool _isAdminEmailValidVar;
+        private bool _canContinuousSendMail;
+        private double _currentProgress;
         private int _borderThickness;
-        private System.Windows.Media.Brush _borderBrush;
 
-        #endregion
+        private int CountData { get; set; }
+
+        private System.Windows.Media.Brush _borderBrush;
+        private System.Windows.Media.Brush _remindingMsgForeground;
+
+        #endregion  
 
         private string bccEmail = null;
         private string ccEmail = null;
 
-        private readonly string templateMailBody = @"C:\Users\Sweet Family\Desktop\Mail Afersys\Mail Templates\Template.htm";
+        //private readonly string templateMailBody = @"C:\Users\Sweet Family\Desktop\Mail Afersys\Mail Templates\Template.htm";
 
         //public DelegateCommand<string> NavigateCommand { get; set; }
         //public DelegateCommand<object> CloseTabCommand { get; }                  
@@ -73,10 +80,16 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             set { _applicationLoadingLabel = value; }
         }
 
-        public string BrowseLabelBtn { get; private set; } = ModuleEnvoiFichePaieLabels.BrowseLabelBtn;
-        public string SendPreviewLabelBtn { get; private set; } = ModuleEnvoiFichePaieLabels.SendPreviewLabelBtn;
-        public string SendByMailLabelBtn { get; private set; } = ModuleEnvoiFichePaieLabels.SendByMailLabelBtn;
-        public string ClearBccCcBoxLabelBtn { get; private set; } = ModuleEnvoiFichePaieLabels.ClearBccCcBoxLabelBtn;
+        public string BrowseLabelBtn { get; private set; } = 
+            ModuleEnvoiFichePaieLabels.BrowseLabelBtn;
+        public string SendPreviewLabelBtn { get; private set; } = 
+            ModuleEnvoiFichePaieLabels.SendPreviewLabelBtn;
+        public string SendByMailLabelBtn { get; private set; } = 
+            ModuleEnvoiFichePaieLabels.SendByMailLabelBtn;
+        public string ClearBccCcBoxLabelBtn { get; private set; } = 
+            ModuleEnvoiFichePaieLabels.ClearBccCcBoxLabelBtn;
+        public string PleaseChooseMailTemplateLabel { get; private set; } = 
+            ModuleEnvoiFichePaieLabels.PleaseChooseMailTemplateLabel;
 
         #endregion
 
@@ -113,7 +126,23 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
         public string MailTemplate
         {
             get { return _mailTemplate; }
-            set { SetProperty(ref _mailTemplate, value); }
+            set
+            {
+                SetProperty(ref _mailTemplate, value);
+
+                if (string.IsNullOrEmpty(_mailTemplate) || _mailTemplate.Length < 13)
+                {
+                    IsReminderMsgVisible = true;
+                    IsTemplateValide = false;
+                    AreSendCommandVisible = false;
+                    RemindingMsgForeground = System.Windows.Media.Brushes.Red;
+                }
+                else
+                {
+                    // -- Save Update Template in temp directory --
+                    SaveUpdateTemplate();
+                }
+            }
         }
 
         public string BccMail
@@ -121,11 +150,12 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             get { return _bccMail; }
             set
             {
-                if (_bccMail != value)
+                SetProperty(ref _bccMail, value);
+
+                if (!string.IsNullOrEmpty(_bccMail))
                 {
-                    SetProperty(ref _bccMail, value);
                     bccEmail = _bccMail;
-                }    
+                }
             }
         }
 
@@ -134,9 +164,10 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             get { return _ccMail; }
             set
             {
-                if (_ccMail != value)
+                SetProperty(ref _ccMail, value);
+
+                if (!string.IsNullOrEmpty(_ccMail))
                 {
-                    SetProperty(ref _ccMail, value);
                     ccEmail = _ccMail;
                 }
             }
@@ -187,6 +218,18 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             set { SetProperty(ref _isTemplateValide, value); }
         }
 
+        public bool IsReminderMsgVisible
+        {
+            get { return _isReminderMsgVisible; }
+            set { SetProperty(ref _isReminderMsgVisible, value); }
+        }
+
+        public bool AreSendCommandVisible
+        {
+            get { return _areSendCommandVisible; }
+            set { SetProperty(ref _areSendCommandVisible, value); }
+        }
+
         public double CurrentProgress
         {
             get { return _currentProgress; }
@@ -198,8 +241,6 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
                 }
             }
         }
-
-        private int CountData { get; set; }
 
         public bool CanContinuousSendMail
         {
@@ -225,7 +266,12 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             set { SetProperty(ref _borderBrush, value); }
         }
 
-        #endregion IsTemplateValide
+        public System.Windows.Media.Brush RemindingMsgForeground
+        {
+            get { return _remindingMsgForeground; }
+            set { SetProperty(ref _remindingMsgForeground, value); }
+        }        
+        #endregion 
 
         #region -- Contructor --
         public EnvoiFichePaieViewModel(IRegionManager regionManager,
@@ -233,7 +279,8 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             IDialogService dialogService,
             IEmailMessage emailMessage)
         {
-            _logger.Debug($"-- ******** Demarrage du module ******** [Nom de la machine :] {Environment.MachineName} ******* --");
+            _logger.Debug($"-- ******** Demarrage du module ******** [Nom de la machine :] " +
+                $"{Environment.MachineName} ******* --");
 
             IsPreviewEmail = false;
             IsFilePathVisible = false;
@@ -268,7 +315,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
         #endregion
 
         #region -- Methodes --
-
+        
         #region -- Background Worker --
         /// <summary>
         /// -- perform all work here --
@@ -304,6 +351,8 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
                     var itemValue = item.Value;
 
                     _logger.Debug($"==> Debut vérification du format des champs BCC et CC.");
+
+                    #region -- ******************************************** --
                     var ed = string.IsNullOrEmpty(bccEmail);
                     var de = RegexMailUtilities.IsValidEmail(bccEmail);
 
@@ -312,7 +361,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
 
                     if (!string.IsNullOrEmpty(bccEmail) || !string.IsNullOrEmpty(ccEmail))
                     {
-                       
+
                     }
                     else
                     {
@@ -323,7 +372,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
                         }
                     }
 
-                    
+
                     //if ((string.IsNullOrEmpty(bccEmail) || !RegexMailUtilities.IsValidEmail(bccEmail)) ||
                     //    (string.IsNullOrEmpty(ccEmail) || !RegexMailUtilities.IsValidEmail(ccEmail)))
                     //{
@@ -336,7 +385,8 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
 
                     //    CanContinuousSendMail = false;
                     //    break;
-                    //}
+                    //} 
+                    #endregion
 
                     _logger.Debug($"==> Fin vérification du format des champs BCC et CC.");
 
@@ -463,51 +513,64 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
                 selectedFile = oDlg.FileName;
                 FilePath = selectedFile;
                 _logger.Debug($"==> Vérification du chemin d'accès du fichier.");
-                if (!string.IsNullOrWhiteSpace(FilePath))
+                try
                 {
-                    MailTemplate = null;
-                    IsFilePathVisible = true;
-                    IsFilePathCorrect = true;
-                    IsTemplateValide = true;
-                    ErrorMessage = string.Empty;
-
-                    // -- Get datatable --
-                    _logger.Debug($"==> Récupération de la datatable.");
-                    _myDataTable = _dataTableFormExcelFileDataService.GetDataTableFromExcelFile(selectedFile);
-
-                    // -- Feel Dictionary --         
-                    _logger.Debug($"==> Récupération du dictionare consolidé.");
-                    MyDictionnary = ConsolidateDataHelper();
-                    if (MyDictionnary.Count > 0)
+                    if (!string.IsNullOrWhiteSpace(FilePath))
                     {
-                        CountData = MyDictionnary.Count;
-                        _logger.Debug($"==> Fin de la récupération du dictionare consolidé.");
+                        MailTemplate = null;
+                        IsFilePathVisible = true;
+                        IsFilePathCorrect = true;
+                        IsTemplateValide = false;
+                        IsReminderMsgVisible = true;
+                        ErrorMessage = string.Empty;
+
+                        // -- Get datatable --
+                        _logger.Debug($"==> Récupération de la datatable.");
+                        _myDataTable = _dataTableFormExcelFileDataService.GetDataTableFromExcelFile(selectedFile);
+
+                        // -- Feel Dictionary --         
+                        _logger.Debug($"==> Récupération du dictionare consolidé.");
+                        MyDictionnary = ConsolidateDataHelper();
+                        if (MyDictionnary.Count > 0)
+                        {
+                            CountData = MyDictionnary.Count;
+                            _logger.Debug($"==> Fin de la récupération du dictionare consolidé.");
+
+                            AreSendCommandVisible = false;
+
+                            // -- Set Reminding message color --
+                            RemindingMsgForeground = System.Windows.Media.Brushes.White;
+                        }
+                        else
+                        {
+                            ErrorMessage = ErrorMessageLabels.CantConsolidateDictionnaryMsg;
+                            _logger.Error($"==> {ErrorMessage}");
+
+                            IsFilePathCorrect = false;
+                            IsFilePathVisible = false;
+                        }
                     }
                     else
                     {
-                        //ErrorMessage = ErrorMessageLabels.CantConsolidateDictionnaryMsg;
-                        //_logger.Error($"==> {ErrorMessage}");
-
-                        //_dialogService.ShowMessage(ErrorMessage, "ERROR",
-                        //                      MessageBoxButton.OK,
-                        //                      MessageBoxImage.Error,
-                        //                      MessageBoxResult.Yes);
+                        ErrorMessage = ErrorMessageLabels.WrongDirectoryMsg;
+                        _logger.Error($"==> {ErrorMessage}");
 
                         IsFilePathCorrect = false;
-                        IsFilePathVisible = false;
                     }
                 }
-                else
+                catch (Exception exception)
                 {
-                    ErrorMessage = ErrorMessageLabels.WrongDirectoryMsg;
-                    _logger.Error($"==> {ErrorMessage}");
-
-                    _dialogService.ShowMessage(ErrorMessage, "ERROR",
+                    Console.WriteLine(exception.ToString());
+                }
+                finally
+                {
+                    if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        _dialogService.ShowMessage(ErrorMessage, "ERROR",
                                               MessageBoxButton.OK,
                                               MessageBoxImage.Error,
                                               MessageBoxResult.Yes);
-
-                    IsFilePathCorrect = false;
+                    }   
                 }
             }
         }                
@@ -533,7 +596,27 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
         }
 
         /// <summary>
-        /// --  --
+        /// -- Save Update Template in temp directory --
+        /// </summary>
+        private void SaveUpdateTemplate()
+        {
+            string tempTemplatePath = @"C:\Template de mail\TempTemplate.htm";
+
+            // --  --
+            _templateFilePath = tempTemplatePath;
+
+            var directoryName = Path.GetDirectoryName(tempTemplatePath);
+            if (!Directory.Exists(directoryName))
+            {
+                Directory.CreateDirectory(directoryName);
+            }
+
+            // -- Save template -- 
+            File.WriteAllText(tempTemplatePath, MailTemplate.TrimEnd());
+        }
+
+        /// <summary>
+        /// -- Choose mail template --
         /// </summary>
         private void OnChooseMailTemplate()
         {
@@ -543,12 +626,16 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             if (DialogResult.OK == oDlg.ShowDialog())
             {
                 selectedFile = oDlg.FileName;
-                string templateFilePath = selectedFile;
+                _templateFilePath = selectedFile;
                 _logger.Debug($"==> Vérification du chemin d'accès du fichier.");
 
-                MailTemplate = templateFilePath != null ? File.ReadAllText(templateFilePath, Encoding.Default) : null;
+                string template = _templateFilePath != null ? File.ReadAllText(_templateFilePath, Encoding.Default) : null;
 
-                IsTemplateValide = false;
+                MailTemplate = template.TrimEnd();
+
+                IsTemplateValide = true;
+                IsReminderMsgVisible = false;
+                AreSendCommandVisible = true;
             }
         }
 
@@ -564,50 +651,60 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             string currentMonth = DateTime.Now.ToString("MMMM").ToUpper();
             string sujet = $"Fihe de paie de {currentMonth}.";
 
-            //string fullName = itemKey.ToString().Split('@')[0].ToString();
-            //string templateMailBody = $"Bonjour {fullName.ToUpper()},\n\nTu trouvera ci-joint ta fiche de paie de du mois de " +
-            //    $"{currentMonth}. \n\nEn te souhaitant bonne réception";                     
-
-            if (IsPreviewEmail && string.IsNullOrEmpty(AdminEmail))
+            try
             {
-                ErrorMessage = ErrorMessageLabels.CheckAdminEmailMsg;
-                _logger.Error($"==> {ErrorMessage}.");
-
-                _dialogService.ShowMessage(ErrorMessage, "ERROR",
-                                           MessageBoxButton.OK,
-                                           MessageBoxImage.Error,
-                                           MessageBoxResult.Yes);
-
-                return false;
-            }
-            else
-            {                
-                _logger.Debug($"==> Appel à la méthode de création d'objet mailMessage [MailConsolidateHelper.BuildMailDetail]");
-                MailConsolidateHelper.BuildMailDetail(_emailMessage, templateMailBody,
-                    sujet, itemValue, itemKey, bcc, cc, AdminEmail, IsPreviewEmail);
-
-                _logger.Debug($"==> Appel de la fontion SendMail [SendEmailHelper.SendEmail]");
-                var sendMailResponse = SendEmailHelper.SendEmail(_emailMessage);
-
-                if (sendMailResponse == false)
+                if (IsPreviewEmail && string.IsNullOrEmpty(AdminEmail))
                 {
-                    ErrorMessage = "Erreur durant l'envoie de l'email. \n Vous devez saisir l'adresse mail administrateur!";
+                    ErrorMessage = ErrorMessageLabels.CheckAdminEmailMsg;
                     _logger.Error($"==> {ErrorMessage}.");
 
-                    _dialogService.ShowMessage(ErrorMessage, "ERROR",
-                                               MessageBoxButton.OK,
-                                               MessageBoxImage.Error,
-                                               MessageBoxResult.Yes);
-
-                    BorderThickness = 2;
-                    BorderBrush = System.Windows.Media.Brushes.Red;
+                    return false;
                 }
                 else
                 {
-                    BorderThickness = 1;
-                    BorderBrush = System.Windows.Media.Brushes.Transparent;
+                    _logger.Debug($"==> Appel à la méthode de création d'objet mailMessage [MailConsolidateHelper.BuildMailDetail]");
+
+                    if (string.IsNullOrEmpty(_templateFilePath))
+                    {
+                        ErrorMessage = "Veuillez choisir le model du corps de votre mail!";
+
+                        // -- Set Reminding message color --
+                        RemindingMsgForeground = System.Windows.Media.Brushes.Red;
+
+                        return false;
+                    }
+
+                    MailConsolidateHelper.BuildMailDetail(_emailMessage, _templateFilePath,
+                            sujet, itemValue, itemKey, bcc, cc, AdminEmail, IsPreviewEmail);
+
+                    _logger.Debug($"==> Appel de la fontion SendMail [SendEmailHelper.SendEmail]");
+                    var sendMailResponse = SendEmailHelper.SendEmail(_emailMessage);
+
+                    if (sendMailResponse == false)
+                    {
+                        ErrorMessage = "Erreur durant l'envoie de l'email. \n Vous devez saisir l'adresse mail administrateur!";
+                        _logger.Error($"==> {ErrorMessage}.");
+
+                        BorderThickness = 2;
+                        BorderBrush = System.Windows.Media.Brushes.Red;
+                    }
+                    else
+                    {
+                        BorderThickness = 1;
+                        BorderBrush = System.Windows.Media.Brushes.Transparent;
+                    }
+                    return sendMailResponse;
                 }
-                return sendMailResponse;
+            }
+            finally
+            {
+                if (!string.IsNullOrWhiteSpace(ErrorMessage))
+                {
+                    _dialogService.ShowMessage(ErrorMessage, "ERROR",
+                                                   MessageBoxButton.OK,
+                                                   MessageBoxImage.Error,
+                                                   MessageBoxResult.Yes);
+                } 
             }
         }        
                 

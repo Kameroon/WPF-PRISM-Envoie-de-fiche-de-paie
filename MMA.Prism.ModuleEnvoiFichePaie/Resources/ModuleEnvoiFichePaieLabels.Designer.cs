@@ -97,6 +97,15 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Veuillez choisir un model de mail ==&gt;.
+        /// </summary>
+        internal static string PleaseChooseMailTemplateLabel {
+            get {
+                return ResourceManager.GetString("PleaseChooseMailTemplateLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Envoyer.
         /// </summary>
         internal static string SendByMailLabelBtn {

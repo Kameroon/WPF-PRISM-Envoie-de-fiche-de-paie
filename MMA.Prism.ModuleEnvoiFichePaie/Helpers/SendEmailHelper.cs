@@ -35,7 +35,8 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Helpers
                         mailMessage.BodyEncoding = Encoding.Default;
                         mailMessage.IsBodyHtml = true;
 
-                        mailMessage.Body = MailConsolidateHelper.BuilBody(body, htmlTemplate, currentMonth, emailMessage.ToEmail);
+                        mailMessage.Body = MailConsolidateHelper.BuilBody(body, 
+                            htmlTemplate, currentMonth, emailMessage.ToEmail);
 
                         if (!string.IsNullOrWhiteSpace(emailMessage.Bcc))
                             mailMessage.Bcc.Add(emailMessage.Bcc);

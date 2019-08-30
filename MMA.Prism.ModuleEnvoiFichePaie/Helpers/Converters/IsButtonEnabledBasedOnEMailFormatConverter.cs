@@ -5,7 +5,7 @@ using System.Windows.Data;
 
 namespace MMA.Prism.ModuleEnvoiFichePaie.Helpers.Converters
 {
-    public class IsButtonEnabledConverter : IValueConverter 
+    public class IsButtonEnabledBasedOnEMailFormatConverter : IValueConverter 
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -71,7 +71,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Helpers.Converters
                                         <MultiDataTrigger.Conditions>
                                             <Condition Binding="{Binding Path=(Validation.HasError), ElementName=textBlokAdminEmail}"
                                                        Value="False"/>
-                                            <Condition Binding="{Binding ElementName=textBlokAdminEmail, Path=Text.Length, Converter={StaticResource IsButtonEnabledConverter}}"
+                                            <Condition Binding="{Binding ElementName=textBlokAdminEmail, Path=Text.Length, Converter={StaticResource IsButtonEnabledBasedOnEMailFormatConverter}}"
                                                        Value="False" />
                                         </MultiDataTrigger.Conditions>
                                         <Setter Property="IsEnabled" Value="True"/>

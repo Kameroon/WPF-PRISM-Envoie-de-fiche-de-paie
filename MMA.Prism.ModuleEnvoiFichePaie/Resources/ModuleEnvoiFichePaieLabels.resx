@@ -129,6 +129,9 @@
   <data name="ModuleLoadingLabel" xml:space="preserve">
     <value>En cours d'exécution ...</value>
   </data>
+  <data name="PleaseChooseMailTemplateLabel" xml:space="preserve">
+    <value>Veuillez choisir un model de mail ==&gt;</value>
+  </data>
   <data name="SendByMailLabelBtn" xml:space="preserve">
     <value>Envoyer</value>
   </data>

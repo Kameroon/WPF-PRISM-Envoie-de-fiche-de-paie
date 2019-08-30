@@ -34,5 +34,4 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Helpers.Converters
             return validationResult;
         }
     }
-
 }
