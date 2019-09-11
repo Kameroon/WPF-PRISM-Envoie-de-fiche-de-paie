@@ -38,41 +38,45 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Services
                 using (OleDbConnection conn = new OleDbConnection(connectionString))
                 {
                     conn.Open();
-                    OleDbCommand cmd = new OleDbCommand();
-                    cmd.Connection = conn;
-                    
-                    // Get all Sheets in Excel File
-                    DataTable dtSheet = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
-
-                    // Loop through all Sheets to get data
-                    foreach (DataRow dr in dtSheet.Rows)
+                    // cmd = new OleDbCommand();
+                    using (OleDbCommand cmd = new OleDbCommand())
                     {
-                        string sheetName = dr["TABLE_NAME"].ToString();
+                        cmd.Connection = conn;
 
-                        if (!sheetName.EndsWith("$"))
+                        // Get all Sheets in Excel File
+                        //DataTable dtSheet = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
+                        using (DataTable dtSheet = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null))
                         {
-                            continue;
+                            // Loop through all Sheets to get data
+                            foreach (DataRow dr in dtSheet.Rows)
+                            {
+                                string sheetName = dr["TABLE_NAME"].ToString();
+
+                                if (!sheetName.EndsWith("$"))
+                                {
+                                    continue;
+                                }
+
+                                // Get all rows from the Sheet
+                                cmd.CommandText = "SELECT * FROM [" + sheetName + "]";
+
+                                dt.TableName = sheetName;
+
+                                using (OleDbDataAdapter da = new OleDbDataAdapter(cmd))
+                                {
+                                    da.Fill(dt);
+                                }
+                                break;
+                            }
                         }
-
-                        // Get all rows from the Sheet
-                        cmd.CommandText = "SELECT * FROM [" + sheetName + "]";
-
-                        dt.TableName = sheetName;
-
-                        OleDbDataAdapter da = new OleDbDataAdapter(cmd);
-                        da.Fill(dt);
-
-                        break;
                     }
-
-                    cmd = null;
                 }
 
                 _logger.Debug($"==> Fin récupération des données dans un fichier Excel et convertion en DataTable.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                _logger.Error($"[GetDataTableFromExcelFile] Une erreur s'est produite : {ex.Message.ToString()}");
                 throw;
             }
             return dt;

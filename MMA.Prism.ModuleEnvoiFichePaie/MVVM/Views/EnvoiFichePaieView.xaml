@@ -182,7 +182,7 @@
 
                         <!-- Template mail -->
                         <TextBox x:Name="textBoxMailTemplate" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" TextWrapping="Wrap"                               
-                                 Text="{Binding MailTemplate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Text="{Binding MailTemplate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MaxHeight="200"
                                  Visibility="{Binding IsTemplateValide, Converter={StaticResource booleanToVisibilityConverter}}">
                         </TextBox>
                         

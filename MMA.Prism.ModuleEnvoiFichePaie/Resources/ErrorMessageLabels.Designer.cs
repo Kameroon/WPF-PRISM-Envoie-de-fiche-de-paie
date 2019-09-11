@@ -70,6 +70,15 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Une erreur est survenue lors de la récupération du fichier Excel.\n\r ERREUR : {0}.
+        /// </summary>
+        internal static string CanGetDataFromExcelFileMsg {
+            get {
+                return ResourceManager.GetString("CanGetDataFromExcelFileMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Erreur durant la consolidation du dictionare..
         /// </summary>
         internal static string CantConsolidateDictionnaryMsg {

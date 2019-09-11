@@ -29,13 +29,17 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
 {
     public class EnvoiFichePaieViewModel : ViewModelBase, IDisposable
     {
+        #region -- Fields --
+        string TEMP_TEMPLATE_PATH = @"C:\Template de mail\TempTemplate.htm";
+
         private string ErrorMessage { get; set; }
         private string InfoMessage { get; set; }
 
         private DataTable _myDataTable = new DataTable();
         private Dictionary<string, string> MyDictionnary = new Dictionary<string, string>();
         public readonly IRegionManager _regionManager;
-        private BackgroundWorker bgWorkerExport;
+        private BackgroundWorker bgWorkerExport; 
+        #endregion
 
         #region -- Privates -- 
         private string _bccMail;
@@ -424,7 +428,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
         /// <param name="e"></param>
         private void Export_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (ErrorMessage == null)
+            if (string.IsNullOrEmpty(ErrorMessage))
             {
                 if (CanContinuousSendMail)
                 {
@@ -560,7 +564,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
                 }
                 catch (Exception exception)
                 {
-                    Console.WriteLine(exception.ToString());
+                    ErrorMessage = string.Format(ErrorMessageLabels.CanGetDataFromExcelFileMsg, exception.Message.ToString());
                 }
                 finally
                 {
@@ -570,7 +574,10 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
                                               MessageBoxButton.OK,
                                               MessageBoxImage.Error,
                                               MessageBoxResult.Yes);
-                    }   
+
+                        IsFilePathCorrect = false;
+                        IsFilePathVisible = false;
+                    }
                 }
             }
         }                
@@ -600,19 +607,17 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
         /// </summary>
         private void SaveUpdateTemplate()
         {
-            string tempTemplatePath = @"C:\Template de mail\TempTemplate.htm";
-
             // --  --
-            _templateFilePath = tempTemplatePath;
+            _templateFilePath = TEMP_TEMPLATE_PATH;
 
-            var directoryName = Path.GetDirectoryName(tempTemplatePath);
+            var directoryName = Path.GetDirectoryName(TEMP_TEMPLATE_PATH);
             if (!Directory.Exists(directoryName))
             {
                 Directory.CreateDirectory(directoryName);
             }
 
             // -- Save template -- 
-            File.WriteAllText(tempTemplatePath, MailTemplate.TrimEnd());
+            File.WriteAllText(TEMP_TEMPLATE_PATH, MailTemplate.TrimEnd());
         }
 
         /// <summary>
@@ -653,7 +658,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
 
             try
             {
-                if (IsPreviewEmail && string.IsNullOrEmpty(AdminEmail))
+                if (string.IsNullOrEmpty(AdminEmail))
                 {
                     ErrorMessage = ErrorMessageLabels.CheckAdminEmailMsg;
                     _logger.Error($"==> {ErrorMessage}.");

@@ -120,6 +120,9 @@
   <data name="AnErreurOccuredMsg" xml:space="preserve">
     <value>Une erreur n'est produite : pour plus de précisions,\n consulter [{0}]</value>
   </data>
+  <data name="CanGetDataFromExcelFileMsg" xml:space="preserve">
+    <value>Une erreur est survenue lors de la récupération du fichier Excel.\n\r ERREUR : {0}</value>
+  </data>
   <data name="CantConsolidateDictionnaryMsg" xml:space="preserve">
     <value>Erreur durant la consolidation du dictionare.</value>
   </data>
