@@ -135,11 +135,17 @@
   <data name="CheckFilesPathMsg" xml:space="preserve">
     <value>Vérifier le chemin des fichiers [{0}]</value>
   </data>
+  <data name="ErrorDuringSendingMailMsg" xml:space="preserve">
+    <value>Erreur durant l'envoie de l'email. \n Vous devez saisir l'adresse mail administrateur!</value>
+  </data>
   <data name="ImpossibleToSendMailMsg" xml:space="preserve">
     <value>Impossoble d'envoyer des mails.\n Assurez-vous que l'adresse : [{0}] saisie soit valide.</value>
   </data>
   <data name="NoDataInDataTableMsg" xml:space="preserve">
     <value>La dataTable ne contient aucune donnée.</value>
+  </data>
+  <data name="PleaseMailBodyMsg" xml:space="preserve">
+    <value>Veuillez choisir le model du corps de votre mail!</value>
   </data>
   <data name="WrongDirectoryMsg" xml:space="preserve">
     <value>Le repertoire selectionné n'est pas valide</value>

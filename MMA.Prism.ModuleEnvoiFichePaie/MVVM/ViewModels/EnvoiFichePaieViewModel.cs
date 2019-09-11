@@ -29,9 +29,12 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
 {
     public class EnvoiFichePaieViewModel : ViewModelBase, IDisposable
     {
-        #region -- Fields --
-        string TEMP_TEMPLATE_PATH = @"C:\Template de mail\TempTemplate.htm";
+        #region -- Constantes --
 
+        string TEMP_TEMPLATE_PATH = @"C:\Template de mail\TempTemplate.htm";
+        #endregion
+
+        #region -- Fields --
         private string ErrorMessage { get; set; }
         private string InfoMessage { get; set; }
 
@@ -47,6 +50,9 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
         private string _adminEmail = "citoyenlamda@gmail.com";
         private string _mailTemplate;
         private string _templateFilePath;
+        private string bccEmail = null;
+        private string ccEmail = null;
+
         private string _filePath;
         private bool _isTestMail;
         private bool _isMainGridEnable;
@@ -65,17 +71,8 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
 
         private System.Windows.Media.Brush _borderBrush;
         private System.Windows.Media.Brush _remindingMsgForeground;
-
         #endregion  
-
-        private string bccEmail = null;
-        private string ccEmail = null;
-
-        //private readonly string templateMailBody = @"C:\Users\Sweet Family\Desktop\Mail Afersys\Mail Templates\Template.htm";
-
-        //public DelegateCommand<string> NavigateCommand { get; set; }
-        //public DelegateCommand<object> CloseTabCommand { get; }                  
-
+                        
         #region -- Labels Initailization --
         private string _applicationLoadingLabel = ModuleEnvoiFichePaieLabels.ModuleLoadingLabel;
         public string ApplicationLoadingLabel
@@ -295,9 +292,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             _dialogService = dialogService;
             _emailMessage = emailMessage;
             _dataTableFormExcelFileDataService = dataTableFormExcelFileDataService;
-
-            //NavigateCommand = new DelegateCommand<string>(Navigate);
-
+                        
             _logger.Debug($"==> Debut Initialisation des commandes...");
             BrowseCommand = new DelegateCommand(OnBrowse, CanBrowse);
             SendMailCommand = new DelegateCommand(OnSendMail, CanSendMail); //.ObservesProperty(() => _emailMessage.ToEmail);
@@ -307,7 +302,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
 
             _logger.Debug($"==> Fin Initialisation des commandes...");
 
-            #region -- thread for cut chart --
+            #region -- Thread for cut chart --
             bgWorkerExport = new BackgroundWorker();
             bgWorkerExport.WorkerReportsProgress = true;
             bgWorkerExport.DoWork += Export_DoWork;
@@ -470,7 +465,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             }
             else
             {
-                _logger.Debug($"==> Poursuite de l'envoie de mail après vérification de l'email.");
+                _logger.Debug($"==> Poursuite de l'envoie de mail après vérification de l'email [{email}].");
                 CanContinuousSendMail = true;
             }
         }
@@ -564,7 +559,8 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
                 }
                 catch (Exception exception)
                 {
-                    ErrorMessage = string.Format(ErrorMessageLabels.CanGetDataFromExcelFileMsg, exception.Message.ToString());
+                    ErrorMessage = string.Format(ErrorMessageLabels.CanGetDataFromExcelFileMsg, 
+                        exception.Message.ToString());
                 }
                 finally
                 {
@@ -671,7 +667,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
 
                     if (string.IsNullOrEmpty(_templateFilePath))
                     {
-                        ErrorMessage = "Veuillez choisir le model du corps de votre mail!";
+                        ErrorMessage = ErrorMessageLabels.PleaseMailBodyMsg;
 
                         // -- Set Reminding message color --
                         RemindingMsgForeground = System.Windows.Media.Brushes.Red;
@@ -687,7 +683,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
 
                     if (sendMailResponse == false)
                     {
-                        ErrorMessage = "Erreur durant l'envoie de l'email. \n Vous devez saisir l'adresse mail administrateur!";
+                        ErrorMessage = ErrorMessageLabels.ErrorDuringSendingMailMsg;
                         _logger.Error($"==> {ErrorMessage}.");
 
                         BorderThickness = 2;
@@ -840,7 +836,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
         {
             Dispose(true);
             bgWorkerExport.Dispose();
-            NLog.LogManager.Shutdown();
+            LogManager.Shutdown();
             GC.SuppressFinalize(this);
         }
         #endregion

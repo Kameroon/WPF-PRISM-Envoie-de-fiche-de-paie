@@ -115,6 +115,15 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Erreur durant l&apos;envoie de l&apos;email. \n Vous devez saisir l&apos;adresse mail administrateur!.
+        /// </summary>
+        internal static string ErrorDuringSendingMailMsg {
+            get {
+                return ResourceManager.GetString("ErrorDuringSendingMailMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Impossoble d&apos;envoyer des mails.\n Assurez-vous que l&apos;adresse : [{0}] saisie soit valide..
         /// </summary>
         internal static string ImpossibleToSendMailMsg {
@@ -129,6 +138,15 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Resources {
         internal static string NoDataInDataTableMsg {
             get {
                 return ResourceManager.GetString("NoDataInDataTableMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Veuillez choisir le model du corps de votre mail!.
+        /// </summary>
+        internal static string PleaseMailBodyMsg {
+            get {
+                return ResourceManager.GetString("PleaseMailBodyMsg", resourceCulture);
             }
         }
         
